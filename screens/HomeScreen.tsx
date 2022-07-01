@@ -14,17 +14,19 @@ export default function HomeScreen({route, navigation}: HomeScreenProps) {
     return (
         <View style={{alignSelf: "stretch", marginTop: "auto", flex: 1, padding: 20 }}>
             <Text style={{justifyContent: 'flex-start', alignSelf: "center", fontSize: 25, fontWeight: 'bold'}}>Welcome To MERN Mafia!</Text>
-            <Text style={{justifyContent: 'flex-start', alignSelf: "center"}}>{name.length != 0 ? `Your name is \"${name}\"` : ""}</Text>
+            <Text style={{justifyContent: 'flex-start', alignSelf: "center", flex: 1}}>{name.length != 0 ? `Your name is \"${name}\"` : ""}</Text>
             
-
-
-            <View style={{alignSelf: 'stretch', marginTop: 'auto', padding: 2, justifyContent: 'space-between'}}>
-                <TextInput onChangeText={(text) => {text = validateText(text); setName(text); setDisabled(!checkValidity(text));}} 
+            <View style={{alignContent: 'space-between'}}>
+                <TextInput onChangeText={(text) => {setName(text); text = validateText(text); ; setDisabled(!checkValidity(text));}} 
                     placeholder={"Enter your username, 3-12 lowercase letters only!"} autoComplete={"username"} value={name}
-                    style={{borderColor: "#0000FF", borderWidth: 1, borderRadius: 10}} 
+                    style={{borderColor: "#0000FF", borderWidth: 1, borderRadius: 10, margin: 4}} 
                 />
-                <Button title="Play Private Match (TBA)" disabled={true} onPress={() => navigation.navigate("PrivateGameLobbyScreen")} color={'#FF0000'} />
-                <Button title="Play Public Match" disabled={disabled} onPress={() => navigation.navigate("PublicGameLobbyScreen")} color={'#3333FF'} />
+                <View style={{margin: 4}}>
+                    <Button title="Play Private Match (TBA)" disabled={true} onPress={() => navigation.navigate("PrivateGameLobbyScreen")} color={'#FF0000'} />
+                </View>
+                <View style={{margin: 4}}>
+                    <Button title="Play Public Match" disabled={disabled} onPress={() => navigation.navigate("PublicGameLobbyScreen")} color={'#3333FF'} />
+                </View>
             </View>
         </View>
     )

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Button, Pressable, StyleSheet, Text, View, Image } from 'react-native';
+import { Button, Pressable, StyleSheet, Text, View, Image, Settings } from 'react-native';
 import {NavigationContainer} from "@react-navigation/native";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import HomeScreen from './screens/HomeScreen';
@@ -8,6 +8,8 @@ import PrivateGameLobbyScreen from './screens/PrivateGameLobbyScreen';
 import PublicGameLobbyScreen from './screens/PublicGameLobbyScreen';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import SettingsScreen from './screens/SettingsScreen';
+import GameScreen from './screens/GameScreen';
 
 
 
@@ -16,6 +18,8 @@ export type StackParamList = {
   HowToPlayScreen: undefined;
   PrivateGameLobbyScreen: undefined;
   PublicGameLobbyScreen: undefined;
+  SettingsScreen: undefined;
+  GameScreen: {lobbyId: string, title: string};
 };
 
 const Stack = createNativeStackNavigator<StackParamList>();
@@ -29,7 +33,7 @@ export default function App() {
             <Pressable onPress={() => navigation.navigate('HowToPlayScreen')} >
               <Icon name="help" size={30} color="#3333FF" style={{paddingHorizontal: 7}} />
             </Pressable>
-            <Pressable onPress={() => navigation.navigate('PrivateGameLobbyScreen')} >
+            <Pressable onPress={() => navigation.navigate('SettingsScreen')} >
               <Icon name="settings" size={30} color="#3333FF" style={{paddingHorizontal: 7}} />
             </Pressable>
           </View>
@@ -37,6 +41,10 @@ export default function App() {
         <Stack.Screen name="HowToPlayScreen" component={HowToPlayScreen} options={{title: 'How To Play'}}/>
         <Stack.Screen name="PrivateGameLobbyScreen" component={PrivateGameLobbyScreen} options={{title: 'Private Games'}}/>
         <Stack.Screen name="PublicGameLobbyScreen" component={PublicGameLobbyScreen} options={{title: 'Public Games'}}/>
+        <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{title: 'Settings'}}/>
+        <Stack.Screen name="GameScreen" component={GameScreen} options={({navigation, route}) => ({title: `${route.params.title}`, headerLeft: () => (
+          <Text></Text>
+        )})}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
