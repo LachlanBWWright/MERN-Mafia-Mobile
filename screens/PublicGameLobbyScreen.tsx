@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, ListRenderItemInfo, Pressable, Button } from "react-native";
-import Axios from "axios"
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { StackParamList } from "../App";
+import {NavigatorScreenParams, RouteProp, useRoute} from '@react-navigation/native';
 
 interface Lobby {
     name: string;
@@ -11,13 +11,13 @@ interface Lobby {
     playerCount: number;
 }
 
-type PublicGameLobbyScreenProps = NativeStackScreenProps<StackParamList, "HomeScreen">
+type PublicGameLobbyScreenProps = NativeStackScreenProps<StackParamList, "PublicGameLobbyScreen">
 
 export default function PublicGameLobbyScreen({route, navigation}: PublicGameLobbyScreenProps) {
     const [roomList, setRoomList] = useState(new Array<Lobby>);
-
+    
     const navigateToGame = (lobbyId: string) => {
-        navigation.navigate('GameScreen', {lobbyId: lobbyId, title: 'Mern Mafia!'})
+        navigation.navigate('GameScreen', {lobbyId: lobbyId, title: 'Mern Mafia!', name: route.params.name})
     }
 
     useEffect(() => {

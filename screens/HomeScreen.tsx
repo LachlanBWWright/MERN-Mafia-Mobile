@@ -25,7 +25,7 @@ export default function HomeScreen({route, navigation}: HomeScreenProps) {
                     <Button title="Play Private Match (TBA)" disabled={true} onPress={() => navigation.navigate("PrivateGameLobbyScreen")} color={'#FF0000'} />
                 </View>
                 <View style={{margin: 4}}>
-                    <Button title="Play Public Match" disabled={disabled} onPress={() => navigation.navigate("PublicGameLobbyScreen")} color={'#3333FF'} />
+                    <Button title="Play Public Match" disabled={disabled} onPress={() => navigation.navigate("PublicGameLobbyScreen", {name: validateText(name)})} color={'#3333FF'} />
                 </View>
             </View>
         </View>

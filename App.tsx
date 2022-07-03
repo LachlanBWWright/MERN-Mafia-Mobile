@@ -17,9 +17,9 @@ export type StackParamList = {
   HomeScreen: undefined;
   HowToPlayScreen: undefined;
   PrivateGameLobbyScreen: undefined;
-  PublicGameLobbyScreen: undefined;
+  PublicGameLobbyScreen: {name: string};
   SettingsScreen: undefined;
-  GameScreen: {lobbyId: string, title: string};
+  GameScreen: {lobbyId: string, title: string, name: string};
 };
 
 const Stack = createNativeStackNavigator<StackParamList>();
