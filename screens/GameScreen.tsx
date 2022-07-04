@@ -1,9 +1,11 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, FlatList, DrawerLayoutAndroid, Dimensions } from "react-native";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { View, Text, TextInput, Button, FlatList, DrawerLayoutAndroid, Vibration } from "react-native";
 import { StackParamList } from "../App";
 import { StackActions } from "@react-navigation/native";
 import io from 'socket.io-client';
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { Socket } from "socket.io";
 
 type Player = {
   name: string,
@@ -24,9 +26,9 @@ export default function Game({route, navigation}: GameScreenProps) {
     const[playerRole, setPlayerRole] = useState("");
     const[alive, setAlive] = useState(true);
     
-    const[textMessage, setTextMessage] = useState("");
+    const[textMessage, setTextMessage] = useState(""); //TODO: Redundant, probably
     const[canTalk, setCanTalk] = useState(true);
-    const[time, setTime] = useState("day");
+    const[time, setTime] = useState("Day");
     const[dayNumber, setDayNumber] = useState(0);
     const[timeLeft, setTimeLeft] = useState(0);
     const[messages, addMessage] = useState(new Array<string>);
@@ -82,6 +84,10 @@ export default function Game({route, navigation}: GameScreenProps) {
         let index = tempPlayerList.findIndex(player => player.name === playerJson.name);
         if(playerJson.role !== undefined) tempPlayerList[index].role = playerJson.role;
         tempPlayerList[index].isAlive = false;
+        if(tempPlayerList[index].isUser) {
+          setCanTalk(false); //Blocks MSGing upon death
+          Vibration.vibrate([500, 200, 500, 200, 500], false); //(3 500ms vibrations with 200ms breaks, does not repeat indefinitely)
+        }
         setPlayerList(tempPlayerList);
     })
 
@@ -120,7 +126,8 @@ export default function Game({route, navigation}: GameScreenProps) {
     socket.emit('playerJoinRoom', route.params.name, route.params.lobbyId, (callback: number) => { //TODO: THis is where the socket is connnected to!
       if(callback !== 0) navigation.dispatch(StackActions.popToTop()); //TODO: Add reason for connection failure.
     });
-      return() => { //Runs Upon close
+
+    return() => { //Runs Upon close
         socket.off('receive-message');
         socket.off('block-messages');
         socket.off('receive-role');
@@ -140,17 +147,19 @@ export default function Game({route, navigation}: GameScreenProps) {
       <DrawerLayoutAndroid
         ref={drawer}
         drawerPosition={"right"}
+        drawerWidth={300}
         renderNavigationView={() => ( //Content of the drawer, should contain the list of players TODO: Make a flatlist
           <FlatList
             data={playerList}
-            renderItem={({item}) => (<PlayerInList player={item}/>
+            renderItem={({item}) => (<PlayerInList player={item} socket={socket} setMessage={setMessage} time={time}/>
             )}
           />
         )}
       >
         <View style={{alignSelf: "stretch", marginTop: "auto", flex: 1, padding: 20 }}>
             <Text style={{justifyContent: 'flex-start', alignSelf: "center"}}>
-                Name: "{route.params.name}" Role: {playerRole}
+                Name: "{route.params.name}" {playerRole != "" ? "Role: " + playerRole + " | ": " | "} 
+                {time}: {dayNumber} | Time Left: {timeLeft}
             </Text>
             <View style={{backgroundColor: '#CCCCCC', flex: 1, borderRadius: 10, padding: 10}}>
                 <FlatList
@@ -187,7 +196,7 @@ export default function Game({route, navigation}: GameScreenProps) {
     )
 }
 
-function PlayerInList(props: {player: Player}) {
+function PlayerInList(props: {player: Player, socket: any, setMessage: Dispatch<SetStateAction<string>>, time: string}) { //TODO: Consider fixing the 'any'
   const [color, setColor] = useState("#FFFFFF");
 
   useEffect(() => {
@@ -199,40 +208,12 @@ function PlayerInList(props: {player: Player}) {
   }, [props.player.isAlive])
 
   return(
-    <View style={{flexDirection: "row", alignSelf: "stretch", flex: 1, justifyContent: "space-between", alignItems: "center", backgroundColor: color, borderWidth: 2, borderColor: "#000000", borderRadius: 5, padding: 5, margin: 2}} >
-      <Text style={{flexGrow: 1}}>Name: {props.player.name} </Text>
-      {props.player.isAlive != undefined && props.player.isAlive && (<Text>Alive placeholder</Text>)}   
-      <Button title="Visit"/>
-      <Button title="Vote"/>
-      <Button title="Vote"/>
+    <View style={{flexDirection: "row", flexWrap: "wrap", alignSelf: "stretch", flex: 1, justifyContent: "space-between", alignItems: "center", backgroundColor: color, borderWidth: 2, borderColor: "#000000", borderRadius: 5, padding: 5, margin: 2}} >
+      <Text style={{flexGrow: 1}}>{props.player.name} {props.player.role !== undefined ? "(" + props.player.role + ")" : ""}</Text>  
+      {props.player.isAlive === true && props.player.isUser !== true && (<Button title="Whisper" onPress={() => props.setMessage("/w " + props.player.name)}/>)}
+      {props.player.isAlive === true && (<Button title="Visit" onPress={() => props.socket.emit('messageSentByUser', '/c ' + props.player.name)}/>)}
+      {props.player.isAlive === true && props.time === "Day" && (<Button title="Vote" onPress={() => props.socket.emit('messageSentByUser', '/v ' + props.player.name)}/>)}
     </View>
   )
 }
-
-/* handleVisit(playerUsername) {
-        
-  if(this.state.visiting !== playerUsername) {
-      this.setState({visiting: playerUsername});
-      this.socket.emit('messageSentByUser', '/c ' + playerUsername);
-  }
-  else {
-      this.setState({visiting: null});
-      this.socket.emit('messageSentByUser', '/c');
-  }
-}
-
-handleWhisper(playerUsername) {
-  this.setState({textMessage: '/w ' + playerUsername + ' '});
-}
-
-handleVote(playerUsername) {
-  if(this.state.votingFor !== playerUsername) {
-      this.setState({votingFor: playerUsername});
-      this.socket.emit('messageSentByUser', '/v ' + playerUsername);
-  }
-  else {
-      this.setState({votingFor: null});
-      this.socket.emit('messageSentByUser', '/v ');
-  }
-} */
 
